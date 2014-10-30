@@ -28,22 +28,6 @@ pub fn run() {
     }
 }
 
-fn init_grid() -> Vec<Vec<Square>> {
-    let mut grid: Vec<Vec<Square>> = Vec::new();
-    let cols: int = 10;
-    let rows: int = 10;
-
-    for y in range(0, rows) {
-        let mut row = Vec::new();
-        for x in range(0, cols) {
-            let val: bool = match x {2i => true, _ => false};
-            row.push(Square{x:x as uint, y:y as uint, active:val});
-        }
-        grid.push(row);
-    }
-
-    return grid;
-}
 fn update_grid(grid: &mut Vec<Vec<Square>>) {
     let old_grid = grid.clone();
     for row in grid.iter_mut() {
@@ -54,18 +38,20 @@ fn update_grid(grid: &mut Vec<Vec<Square>>) {
 }
 
 fn get_updated_status(old_grid: &Vec<Vec<Square>>, x: uint, y: uint) -> bool {
+    let height = old_grid.len();
+    let width = old_grid[0].len();
     let mut allowed_x: Vec<uint> = vec![x];
     let mut allowed_y: Vec<uint> = vec![y];
     if x > 0 {
         allowed_x.push(x-1);
     }
-    if x < 10-1 {
+    if x < width-1 {
         allowed_x.push(x+1);
     }
     if y > 0 {
         allowed_y.push(y-1);
     }
-    if y < 10-1 {
+    if y < height-1 {
         allowed_y.push(y+1);
     }
 
@@ -82,7 +68,7 @@ fn get_updated_status(old_grid: &Vec<Vec<Square>>, x: uint, y: uint) -> bool {
     }
 
     match total {
-        2 => old_grid[x][y].active,
+        2 => old_grid[y][x].active,
         3 => true,
         _ => false
     }
@@ -99,8 +85,8 @@ fn display_grid(grid: &Vec<Vec<Square>>) {
 }
 
 fn get_grid_content() -> Vec<Vec<Square>> {
-    let level_path = Path::new("./resources/grid.txt");
-    let mut file = BufferedReader::new(File::open(&level_path));
+    let grid_path = Path::new("./resources/grid.txt");
+    let mut file = BufferedReader::new(File::open(&grid_path));
     let lines: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
     let mut grid: Vec<Vec<Square>> = Vec::new();
 
