@@ -1,0 +1,5 @@
+[package]
+
+name = "life"
+version = "0.0.1"
+authors = ["Julien Chichignoud <julien.chichignoud@gmail.com>"]
