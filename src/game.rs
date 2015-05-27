@@ -1,14 +1,16 @@
 extern crate time;
 
-use std::io::BufferedReader;
-use std::io::File;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::fs::File;
+use std::path::Path;
 
 use std::clone::Clone;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 struct Square {
-    x: uint,
-    y: uint,
+    x: usize,
+    y: usize,
     active: bool
 }
 
@@ -37,11 +39,11 @@ fn update_grid(grid: &mut Vec<Vec<Square>>) {
     }
 }
 
-fn get_updated_status(old_grid: &Vec<Vec<Square>>, x: uint, y: uint) -> bool {
+fn get_updated_status(old_grid: &Vec<Vec<Square>>, x: usize, y: usize) -> bool {
     let height = old_grid.len();
     let width = old_grid[0].len();
-    let mut allowed_x: Vec<uint> = vec![x];
-    let mut allowed_y: Vec<uint> = vec![y];
+    let mut allowed_x: Vec<usize> = vec![x];
+    let mut allowed_y: Vec<usize> = vec![y];
     if x > 0 {
         allowed_x.push(x-1);
     }
@@ -55,7 +57,7 @@ fn get_updated_status(old_grid: &Vec<Vec<Square>>, x: uint, y: uint) -> bool {
         allowed_y.push(y+1);
     }
 
-    let mut total: int = 0;
+    let mut total: i32 = 0;
     for i in allowed_x.iter() {
         for j in allowed_y.iter() {
             if *i == x && *j == y {
@@ -77,7 +79,7 @@ fn get_updated_status(old_grid: &Vec<Vec<Square>>, x: uint, y: uint) -> bool {
 fn display_grid(grid: &Vec<Vec<Square>>) {
     for row in grid.iter() {
         for c in row.iter() {
-            print!("{}", match c.active {false => 0i, true => 1i});
+            print!("{}", match c.active {false => 0i32, true => 1i32});
         }
         print!("\n");
     }
@@ -86,8 +88,12 @@ fn display_grid(grid: &Vec<Vec<Square>>) {
 
 fn get_grid_content() -> Vec<Vec<Square>> {
     let grid_path = Path::new("./resources/grid.txt");
-    let mut file = BufferedReader::new(File::open(&grid_path));
-    let lines: Vec<String> = file.lines().map(|x| x.unwrap()).collect();
+    let file = match File::open(&grid_path) {
+        Ok(file) => file,
+        Err(..) => panic!("Error reading file")
+    };
+    let buffer = BufReader::new(file);
+    let lines: Vec<String> = buffer.lines().map(|x| x.unwrap()).collect();
     let mut grid: Vec<Vec<Square>> = Vec::new();
 
     let mut y = 0;
@@ -95,9 +101,8 @@ fn get_grid_content() -> Vec<Vec<Square>> {
         let mut row: Vec<Square> = Vec::new();
         let mut myline = line.clone();
         myline.pop();
-        let slice: &str = myline.as_slice();
         let mut x = 0;
-        for c in slice.chars() {
+        for c in myline.chars() {
             let v: bool = match c.to_digit(2) {
                 Some(1) => true,
                 _ => false
